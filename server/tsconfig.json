@@ -112,7 +112,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "resolveJsonModule": true,
-    "typeRoots": ["./types", "./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types", "./src/types"]  
   },
-  "include": ["src/**/*", "types"]
+  "include": ["src", "src/types"]
 }

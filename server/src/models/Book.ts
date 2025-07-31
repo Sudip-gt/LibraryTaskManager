@@ -6,6 +6,9 @@ export interface IBook extends Document {
   description: string;
   available: boolean;
   borrowFee: number;
+  isBorrowed?: boolean;
+  borrowedBy?: mongoose.Types.ObjectId | null;
+  borrowedAt?: Date | null;
 }
 
 const bookSchema = new Schema<IBook>({
@@ -13,7 +16,10 @@ const bookSchema = new Schema<IBook>({
   author: { type: String, required: true },
   description: { type: String },
   available: { type: Boolean, default: true },
-  borrowFee: { type: Number, required: true }
+  borrowFee: { type: Number, required: true },
+  isBorrowed: { type: Boolean, default: false },
+  borrowedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+  borrowedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 export default mongoose.model<IBook>('Book', bookSchema);
