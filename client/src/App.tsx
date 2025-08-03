@@ -1,12 +1,26 @@
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Books from './pages/Books'
+import { Toaster } from 'react-hot-toast'
+import UserProfile from './pages/UserProfile'
 
 function App() {
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-100">
-      <h1 className="text-4xl font-bold text-blue-700">Tailwind CSS v3 is working! 🚀</h1>
-    </div>
-  );
+      <Router>
+        <Toaster position='top-center'/>
+        <Navbar />
+        <div className="p-4">
+          <Routes>
+            <Route path="/" element={<Books />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/user-profile" element={<UserProfile />} />
+          </Routes>
+        </div>
+      </Router>
+  )
 }
 
 export default App
