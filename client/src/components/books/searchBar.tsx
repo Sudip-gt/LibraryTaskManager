@@ -2,18 +2,18 @@ import React from 'react';
 
 interface SearchBarProps {
   searchTerm: string;
-  onSearch: (value: string) => void;
+  onSearchChange: (value: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange }) => {
   return (
-    <div className="mb-6">
+    <div className="mb-6 max-w-md mx-auto">
       <input
         type="text"
-        placeholder="Search by title or author..."
         value={searchTerm}
-        onChange={(e) => onSearch(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Search by title or author..."
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-400"
       />
     </div>
   );

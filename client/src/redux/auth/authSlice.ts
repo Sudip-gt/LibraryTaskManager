@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUser } from './authAPI';
+import { registerUser, loginUser, fetchUser } from './authAPI';
 import type { User } from '../../types/auth';
 import type { AxiosError } from 'axios';
 
@@ -39,6 +39,22 @@ export const login = createAsyncThunk(
   }
 );
 
+////////////////////////// to load user from token after login on refresh
+export const loadUser = createAsyncThunk(
+  'auth/loadUser',
+  async (_, thunkAPI) => {
+    try {
+      const res = await fetchUser(); // returns { accessToken, user }
+      localStorage.setItem('accessToken', res.accessToken);
+      return res.user;
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>;
+      return thunkAPI.rejectWithValue(err.response?.data || 'Failed to load user');
+    }
+  }
+);
+
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -46,6 +62,7 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       localStorage.removeItem('accessToken');
+      localStorage.setItem('loggedOut', 'true');
     },
   },
   extraReducers: (builder) => {
@@ -77,6 +94,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Login failed';
       });
+      builder
+      .addCase(loadUser.fulfilled, (state, action) => {
+      state.user = action.payload;
+    })
+      .addCase(loadUser.rejected, (state) => {
+      state.user = null;
+    });
   },
 });
 

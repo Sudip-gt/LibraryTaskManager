@@ -7,7 +7,7 @@ import {
   deleteBook
 } from '../controllers/bookController';
 import { authenticate, requireAdmin } from '../middleware/auth';
-import { borrowBook } from '../controllers/borrowBookController';
+import { borrowBook, returnBook } from '../controllers/borrowBookController';
 
 const router = express.Router();
 
@@ -21,5 +21,6 @@ router.delete('/:id', authenticate, requireAdmin, deleteBook);
 
 /////////////////borrowing routes
 router.post('/borrow/:id', authenticate, borrowBook);
+router.post('/return/:id', authenticate, returnBook);
 
 export default router;

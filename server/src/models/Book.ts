@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { IUser } from './User'; 
 
 export interface IBook extends Document {
   title: string;
@@ -7,7 +8,7 @@ export interface IBook extends Document {
   available: boolean;
   borrowFee: number;
   isBorrowed?: boolean;
-  borrowedBy?: mongoose.Types.ObjectId | null;
+  borrowedBy?: IUser | mongoose.Types.ObjectId | null; 
   borrowedAt?: Date | null;
 }
 
@@ -18,7 +19,11 @@ const bookSchema = new Schema<IBook>({
   available: { type: Boolean, default: true },
   borrowFee: { type: Number, required: true },
   isBorrowed: { type: Boolean, default: false },
-  borrowedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+  borrowedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', 
+    default: null,
+  },
   borrowedAt: { type: Date, default: null },
 }, { timestamps: true });
 

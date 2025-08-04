@@ -5,8 +5,22 @@ import Register from './pages/Register'
 import Books from './pages/Books'
 import { Toaster } from 'react-hot-toast'
 import UserProfile from './pages/UserProfile'
+import { useEffect } from 'react'
+import { useAppDispatch } from './redux/hook'
+import { loadUser } from './redux/auth/authSlice'
 
 function App() {
+
+  ////////////////////////// to load user from token after login on refresh
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+  const loggedOut = localStorage.getItem('loggedOut') === 'true';
+  if (!loggedOut) {
+    dispatch(loadUser());
+  }
+}, [dispatch]);
+
   return (
       <Router>
         <Toaster position='top-center'/>

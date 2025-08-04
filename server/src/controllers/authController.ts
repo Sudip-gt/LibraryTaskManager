@@ -49,13 +49,33 @@ export const refresh = async (req: Request, res: Response) => {
     const user = await User.findById(decoded.userId) as IUser;
 
     if (!user || user.refreshToken !== token) return res.sendStatus(403);
-
+    
     const newAccessToken = generateAccessToken(user._id.toString(), user.role);
-    res.json({ accessToken: newAccessToken });
+    const newRefreshToken = generateRefreshToken(user._id.toString());
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.cookie('jwt', newRefreshToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      accessToken: newAccessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+      },
+    });
   } catch {
     return res.sendStatus(403);
   }
 };
+
 
 export const logout = async (req: Request, res: Response) => {
   const token = req.cookies.jwt;
