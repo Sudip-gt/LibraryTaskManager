@@ -8,18 +8,20 @@ import UserProfile from './pages/UserProfile'
 import { useEffect } from 'react'
 import { useAppDispatch } from './redux/hook'
 import { loadUser } from './redux/auth/authSlice'
+import Success from './pages/strippePages/Success'
+import Cancel from './pages/strippePages/Cancel'
+import TaskCreated from './pages/TaskCreated'
 
 function App() {
 
-  ////////////////////////// to load user from token after login on refresh
-  const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
 
   useEffect(() => {
-  const loggedOut = localStorage.getItem('loggedOut') === 'true';
-  if (!loggedOut) {
-    dispatch(loadUser());
-  }
-}, [dispatch]);
+    const loggedOut = localStorage.getItem('loggedOut') === 'true';
+    if (!loggedOut) {
+      dispatch(loadUser());
+    }
+  }, [dispatch]);
 
   return (
       <Router>
@@ -31,6 +33,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/user-profile" element={<UserProfile />} />
+
+            <Route path="/success" element={<Success />} />
+            <Route path="/cancel" element={<Cancel />} />
+            <Route path="/task-created" element ={<TaskCreated />} />
+
           </Routes>
         </div>
       </Router>

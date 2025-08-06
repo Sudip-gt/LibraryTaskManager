@@ -1,12 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchBooks, borrowBook, returnBook } from '../../api/bookAPI';
-import type { Book } from '../../types/book';
-
-interface BookState {
-    books: Book[];
-    loading: boolean;
-    error: string | null;
-}
+import type { BookState } from '../../types/book';
+import { createCheckoutSession } from '../../api/stripeAPI';
 
 const initialState: BookState = {
     books: [],
@@ -34,6 +29,13 @@ export const returnBookById = createAsyncThunk(
     }
 );
 
+export const startCheckoutSession = createAsyncThunk(
+  'books/startCheckoutSession',
+  async ({ bookId }: { bookId: string }) => {
+    const url = await createCheckoutSession(bookId);
+    return url;
+  }
+);
 
 const bookSlice = createSlice({
     name: 'books',

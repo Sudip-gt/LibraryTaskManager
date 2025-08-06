@@ -17,8 +17,14 @@ app.use(cors({
 
 import authRoutes from "./routes/authRoutes";
 import bookRoutes from "./routes/bookRoutes";
+import stripeRoutes from "./routes/stripeRoutes";
+import taskRoutes from "./routes/taskRoutes";
+
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
+
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/tasks", taskRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello from server!");

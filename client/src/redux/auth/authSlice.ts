@@ -1,16 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { registerUser, loginUser, fetchUser } from './authAPI';
-import type { User } from '../../types/auth';
+import type { AuthState } from '../../types/auth';
 import type { AxiosError } from 'axios';
 
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-}
-
 const initialState: AuthState = {
-  user: null,
+  user: JSON.parse(localStorage.getItem('user') || 'null'), 
   loading: false,
   error: null,
 };
@@ -39,21 +33,24 @@ export const login = createAsyncThunk(
   }
 );
 
-////////////////////////// to load user from token after login on refresh
 export const loadUser = createAsyncThunk(
   'auth/loadUser',
   async (_, thunkAPI) => {
     try {
-      const res = await fetchUser(); // returns { accessToken, user }
+      const res = await fetchUser();
       localStorage.setItem('accessToken', res.accessToken);
+      localStorage.setItem('user', JSON.stringify(res.user));
       return res.user;
     } catch (error: unknown) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        return JSON.parse(storedUser);
+      }
       const err = error as AxiosError<{ message: string }>;
       return thunkAPI.rejectWithValue(err.response?.data || 'Failed to load user');
     }
   }
 );
-
 
 const authSlice = createSlice({
   name: 'auth',
@@ -62,6 +59,7 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
       localStorage.setItem('loggedOut', 'true');
     },
   },
@@ -75,6 +73,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         localStorage.setItem('accessToken', action.payload.accessToken);
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -89,18 +88,19 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         localStorage.setItem('accessToken', action.payload.accessToken);
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
-      });
-      builder
+      })
+
       .addCase(loadUser.fulfilled, (state, action) => {
-      state.user = action.payload;
-    })
+        state.user = action.payload;
+      })
       .addCase(loadUser.rejected, (state) => {
-      state.user = null;
-    });
+        state.user = null;
+      });
   },
 });
 

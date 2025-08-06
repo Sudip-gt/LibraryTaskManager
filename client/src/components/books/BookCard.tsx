@@ -47,7 +47,7 @@ const BookCard: React.FC<BookCardProps> = ({
       {book.isBorrowed && (
         <button
           onClick={() => onReturn(book._id)}
-          className="mt-4 w-full bg-blue-600 text-white py-1.5 rounded hover:bg-blue-700 transition"
+          className="mt-4 w-full bg-red-600 text-white py-1.5 rounded hover:bg-red-700 transition"
         >
           Return
         </button>

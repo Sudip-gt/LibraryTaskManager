@@ -15,3 +15,9 @@ export interface AuthForm {
   email: string;
   password: string;
 }
+
+interface AuthState {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+}

@@ -8,3 +8,9 @@ export interface Book {
   borrowedBy?: string | null;
   borrowedAt?: string | null;
 }
+
+interface BookState {
+    books: Book[];
+    loading: boolean;
+    error: string | null;
+}
