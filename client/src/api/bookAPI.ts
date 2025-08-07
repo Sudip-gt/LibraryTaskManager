@@ -17,9 +17,10 @@ export const borrowBook = async (bookId: string, token: string) => {
 };
 
 export const returnBook = async (bookId: string, token: string) => {
-  await axios.post(`${BASE_URL}/return/${bookId}`, {}, {
+  const res = await axios.put(`${BASE_URL}/return/${bookId}`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return res.data;
 };

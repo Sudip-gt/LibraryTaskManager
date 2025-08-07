@@ -37,6 +37,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
           quantity: 1,
         },
       ],
+      locale: 'en',
       success_url: `${process.env.CLIENT_URL}/success?bookId=${book._id}`,
       cancel_url: `${process.env.CLIENT_URL}/cancel`,
     });

@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hook';
 import { loadBooks, returnBookById, startCheckoutSession } from '../redux/books/bookSlice';
 import BookList from '../components/books/BookList';
 import SearchBar from '../components/books/SearchBar';
+import toast from 'react-hot-toast';
 
 const Books: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -33,14 +34,23 @@ const Books: React.FC = () => {
   }
   };
 
-  const handleReturn = (bookId: string) => {
-    if (!isLoggedIn) {
-      setLoginErrorShownFor(bookId);
-      return;
-    }
-    dispatch(returnBookById({ bookId, token }));
+const handleReturn = async (bookId: string) => {
+  if (!isLoggedIn) {
+    setLoginErrorShownFor(bookId);
+    return;
+  }
+
+  try {
+    await dispatch(returnBookById({ bookId, token })).unwrap();
     setLoginErrorShownFor(null);
-  };
+    toast.success('Book returned successfully');
+    dispatch(loadBooks());
+  } catch (err) {
+    console.error('Failed to return book:', err);
+    toast.error('Failed to return book');
+  }
+};
+
 
   const filteredBooks = books.filter((book) =>
     `${book.title} ${book.author}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -48,7 +58,7 @@ const Books: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-3xl font-bold text-center mb-6">📚 Library Books</h2>
+      <h2 className="text-3xl font-bold text-center mb-6">Library Books</h2>
 
       <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 

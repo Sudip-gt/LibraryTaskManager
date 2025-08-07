@@ -5,6 +5,7 @@ import { createCheckoutSession } from '../../api/stripeAPI';
 
 const initialState: BookState = {
     books: [],
+    tasks: [],
     loading: false,
     error: null,
 };
@@ -24,8 +25,8 @@ export const borrowBookById = createAsyncThunk(
 export const returnBookById = createAsyncThunk(
     'books/returnBook',
     async ({ bookId, token }: { bookId: string; token: string }) => {
-        await returnBook(bookId, token);
-        return bookId;
+        const res = await returnBook(bookId, token);
+        return res;
     }
 );
 
@@ -62,12 +63,14 @@ const bookSlice = createSlice({
             })
 
             .addCase(returnBookById.fulfilled, (state, action) => {
-                const book = state.books.find((b) => b._id === action.payload);
+
+                const book = state.books.find((b) => b._id === action.payload );
                 if (book) {
                     book.isBorrowed = false;
                     book.borrowedBy = null;
                     book.borrowedAt = null;
                 }
+                state.tasks = state.tasks.filter(task => task.book !== action.payload);
             })
     },
 });

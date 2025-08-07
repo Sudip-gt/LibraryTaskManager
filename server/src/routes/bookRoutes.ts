@@ -21,6 +21,6 @@ router.delete('/:id', authenticate, requireAdmin, deleteBook);
 
 /////////////////borrowing routes
 router.post('/borrow/:id', authenticate, borrowBook);
-router.post('/return/:id', authenticate, returnBook);
+router.put('/return/:id', authenticate, returnBook);
 
 export default router;

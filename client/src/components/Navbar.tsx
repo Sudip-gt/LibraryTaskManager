@@ -187,9 +187,7 @@ const handleLogout = async () => {
           Library
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex space-x-2 items-center" ref={dropdownRef}>
-          {/* Show Books and Tasks only when user is logged in */}
           {user && (
             <>
               <Link to="/" className={linkStyle('/')} aria-label="Books">
@@ -246,13 +244,13 @@ const handleLogout = async () => {
                     onClick={() => setDropdownOpen(false)}
                     className="block px-4 py-2 hover:bg-blue-50 transition-colors border-b border-gray-100"
                   >
-                    👤 Profile
+                    Profile
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    🚪 Logout
+                    Logout
                   </button>
                 </div>
               )}
@@ -260,7 +258,6 @@ const handleLogout = async () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
         <button
           className="md:hidden p-2 rounded-md hover:bg-blue-500 transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -278,7 +275,6 @@ const handleLogout = async () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-blue-700 border-t border-blue-500" ref={mobileMenuRef}>
           <div className="px-4 py-2 space-y-1">
@@ -303,7 +299,7 @@ const handleLogout = async () => {
                   className="block px-3 py-2 rounded-md hover:bg-blue-600"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  👤 Profile
+                  Profile
                 </Link>
                 <button
                   onClick={() => {
@@ -312,7 +308,7 @@ const handleLogout = async () => {
                   }}
                   className="w-full text-left px-3 py-2 rounded-md text-red-200 hover:bg-red-600 hover:text-white"
                 >
-                  🚪 Logout
+                  Logout
                 </button>
               </>
             )}

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Book from '../models/Book';
 import User from '../models/User';
 import mongoose from 'mongoose';
+import Task from '../models/Task';
 
 declare interface userRequest extends Request {
   user?: {
@@ -72,8 +73,9 @@ export const returnBook = async (req: userRequest, res: Response) => {
     book.borrowedBy = null;
     book.borrowedAt = null;
     await book.save();
+    await Task.findOneAndDelete({ book: id, user: userId });
 
-    res.json({ message: 'Book returned successfully' });
+    res.json({ message: 'Book returned successfully', bookId: id,  });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to return book' });

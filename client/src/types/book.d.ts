@@ -1,3 +1,5 @@
+import type { Task } from "./task";
+
 export interface Book {
   _id: string;
   title: string;
@@ -11,6 +13,7 @@ export interface Book {
 
 interface BookState {
     books: Book[];
+    tasks: Task[];
     loading: boolean;
     error: string | null;
 }

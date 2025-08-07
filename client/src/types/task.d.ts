@@ -1,5 +1,6 @@
 export interface Task {
   _id?: string;
+  book: string;
   user: string;
   title: string;
   dueDate: string;
