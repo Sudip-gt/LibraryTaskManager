@@ -9,3 +9,8 @@ export interface Task {
   relatedBook: string;
   priority?: 'low' | 'medium' | 'high';
 }
+
+export interface Task {
+  title: string;
+  dueDate: string;
+}

@@ -135,11 +135,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/hook';
 import { borrowBookById } from '../../redux/books/bookSlice';
 import API from '../../api/axiosInstance';
 import type { Book } from '../../types/book.d';
-
-interface Task {
-  title: string;
-  dueDate: string;
-}
+import type { Task } from '../../types/task';
 
 const Success = () => {
   const [params] = useSearchParams();
