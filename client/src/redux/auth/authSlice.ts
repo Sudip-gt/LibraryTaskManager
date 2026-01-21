@@ -3,8 +3,18 @@ import { registerUser, loginUser, fetchUser } from './authAPI';
 import type { AuthState } from '../../types/auth';
 import type { AxiosError } from 'axios';
 
+const getUserFromStorage = () => {
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error('Failed to parse user from local storage', error);
+    return null;
+  }
+};
+
 const initialState: AuthState = {
-  user: JSON.parse(localStorage.getItem('user') || 'null'), 
+  user: getUserFromStorage(),
   loading: false,
   error: null,
 };
