@@ -33,7 +33,7 @@ export const login = async (req: Request, res: Response) => {
   res.cookie('jwt', refreshToken, {
     httpOnly: true,
     sameSite: 'strict',
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -49,7 +49,7 @@ export const refresh = async (req: Request, res: Response) => {
     const user = await User.findById(decoded.userId) as IUser;
 
     if (!user || user.refreshToken !== token) return res.sendStatus(403);
-    
+
     const newAccessToken = generateAccessToken(user._id.toString(), user.role);
     const newRefreshToken = generateRefreshToken(user._id.toString());
 
@@ -59,7 +59,7 @@ export const refresh = async (req: Request, res: Response) => {
     res.cookie('jwt', newRefreshToken, {
       httpOnly: true,
       sameSite: 'strict',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
