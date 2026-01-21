@@ -26,30 +26,31 @@ const Books: React.FC = () => {
     // dispatch(borrowBookById({ bookId, token }));
     // setLoginErrorShownFor(null);
     try {
-    const resultAction = await dispatch(startCheckoutSession({ bookId }));
-    const url = resultAction.payload as string;
-    window.location.href = url;
-  } catch (error) {
-    console.error('Failed to start checkout session', error);
-  }
+      const resultAction = await dispatch(startCheckoutSession({ bookId }));
+      const url = resultAction.payload as string;
+      window.location.href = url;
+    } catch (error) {
+      console.error('Failed to start checkout session', error);
+    }
   };
 
-const handleReturn = async (bookId: string) => {
-  if (!isLoggedIn) {
-    setLoginErrorShownFor(bookId);
-    return;
-  }
+  const handleReturn = async (bookId: string) => {
+    if (!isLoggedIn) {
+      setLoginErrorShownFor(bookId);
+      return;
+    }
 
-  try {
-    await dispatch(returnBookById({ bookId, token })).unwrap();
-    setLoginErrorShownFor(null);
-    toast.success('Book returned successfully');
-    dispatch(loadBooks());
-  } catch (err) {
-    console.error('Failed to return book:', err);
-    toast.error('Failed to return book');
-  }
-};
+    try {
+      await dispatch(returnBookById({ bookId, token })).unwrap();
+      setLoginErrorShownFor(null);
+      localStorage.removeItem(`taskCreatedFor-${bookId}`);
+      toast.success('Book returned successfully');
+      dispatch(loadBooks());
+    } catch (err) {
+      console.error('Failed to return book:', err);
+      toast.error('Failed to return book');
+    }
+  };
 
 
   const filteredBooks = books.filter((book) =>
