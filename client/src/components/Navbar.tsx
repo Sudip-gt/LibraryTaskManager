@@ -115,11 +115,11 @@
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/hook';
-import { logout } from '../redux/auth/authSlice';
+import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { logoutUser } from '../redux/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
 
 const Navbar: React.FC = () => {
   const { pathname } = useLocation();
@@ -140,7 +140,7 @@ const Navbar: React.FC = () => {
 
 const handleLogout = async () => {
   try {
-    await dispatch(logout());
+    await dispatch(logoutUser());
     toast.success('Logout successful!');
     setDropdownOpen(false);
     navigate('/login');

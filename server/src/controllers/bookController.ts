@@ -25,12 +25,13 @@ export const updateBook = async (req: Request, res: Response) => {
 };
 
 export const deleteBook = async (req: Request, res: Response) => {
-    const book = await Book.findByIdAndDelete(req.params.id);
+    const book = await Book.findById(req.params.id);
     if (!book) {
         return res.status(404).json({ message: 'Book not found' });
     }
     if (book.isBorrowed) {
-        return res.status(400).json({ message: 'Book is currently borrowed' });
+        return res.status(400).json({ message: 'Book is currently borrowed and cannot be deleted' });
     }
+    await Book.findByIdAndDelete(req.params.id);
     res.json({ message: 'Book deleted successfully' });
 };

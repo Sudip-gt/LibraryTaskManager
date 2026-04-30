@@ -1,98 +1,66 @@
 
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
-import { useAppDispatch, useAppSelector } from '../../redux/hook';
-import { borrowBookById } from '../../redux/books/bookSlice';
 import API from '../../api/axiosInstance';
+import { useAppSelector } from '../../redux/hook';
 import type { Book } from '../../types/book.d';
 import type { Task } from '../../types/task';
 
 const Success = () => {
   const [params] = useSearchParams();
-  const bookId = params.get('bookId');
-  const dispatch = useAppDispatch();
+  const sessionId = params.get('session_id');
+  const user = useAppSelector((state) => state.auth.user);
 
   const [book, setBook] = useState<Book | null>(null);
   const [task, setTask] = useState<Task | null>(null);
-  const [isCreatingTask, setIsCreatingTask] = useState(false);
-  const user = useAppSelector((state) => state.auth.user);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const verifyAttempted = useRef(false);
 
-  // Use refs to prevent duplicate API calls
-  const taskCreationAttempted = useRef(false);
-  const bookBorrowAttempted = useRef(false);
-
-  ///////////////////////////////////////// Mark book as borrowed
   useEffect(() => {
-    const token = localStorage.getItem('accessToken') || '';
-    if (bookId && !bookBorrowAttempted.current) {
-      bookBorrowAttempted.current = true;
-      dispatch(borrowBookById({ bookId, token }));
-    }
-  }, [bookId, dispatch]);
-
-  ///////////////////////////////////////////Fetch book info
-  useEffect(() => {
-    const fetchBook = async () => {
-      if (bookId) {
-        try {
-          const res = await API.get(`/books/${bookId}`);
-          setBook(res.data);
-        } catch (error) {
-          console.error('Error fetching book:', error);
-        }
-      }
-    };
-    fetchBook();
-  }, [bookId]);
-
-  //////////////////////////////// Combined task handling effect
-  useEffect(() => {
-    const handleTask = async () => {
-      if (!bookId || taskCreationAttempted.current || isCreatingTask) return;
-
-      taskCreationAttempted.current = true;
-      setIsCreatingTask(true);
+    const verifyPayment = async () => {
+      if (!sessionId || verifyAttempted.current) return;
+      verifyAttempted.current = true;
 
       try {
-        const token = localStorage.getItem('accessToken') || '';
-
-        // First, try to fetch existing task
-        try {
-          const existingTaskRes = await API.get(`/tasks/by-book/${bookId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (existingTaskRes.data) {
-            setTask(existingTaskRes.data);
-            localStorage.setItem(`taskCreatedFor-${bookId}`, 'true');
-            return;
-          }
-        } catch (error) {
-          console.error('Error fetching existing task:', error);
-        }
-
-        // Check localStorage to prevent duplicate creation
-        const alreadyCreated = localStorage.getItem(`taskCreatedFor-${bookId}`);
-        if (alreadyCreated) return;
-
-        // Create new task
-        const createTaskRes = await API.post('/tasks/return-task', { bookId }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setTask(createTaskRes.data);
-        localStorage.setItem(`taskCreatedFor-${bookId}`, 'true');
-
-      } catch (error) {
-        console.error('Error handling task:', error);
-        taskCreationAttempted.current = false; // Reset on error
+        const res = await API.get(`/stripe/verify-session?session_id=${sessionId}`);
+        setBook(res.data.book);
+        setTask(res.data.task);
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Failed to verify payment');
       } finally {
-        setIsCreatingTask(false);
+        setLoading(false);
       }
     };
 
-    handleTask();
-  }, [bookId]);
+    verifyPayment();
+  }, [sessionId]);
+
+  if (!sessionId) {
+    return (
+      <div className="max-w-xl mx-auto mt-16 text-center">
+        <h1 className="text-2xl font-semibold text-red-600">Invalid page</h1>
+        <p className="text-gray-600 mt-2">No payment session found.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-xl mx-auto mt-16 text-center">
+        <p className="text-gray-600">Verifying payment...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto mt-16 text-center">
+        <h1 className="text-2xl font-semibold text-red-600">Payment verification failed</h1>
+        <p className="text-gray-600 mt-2">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto mt-16 text-center space-y-4">
@@ -104,26 +72,20 @@ const Success = () => {
         </p>
       )}
 
-      {book ? (
+      {book && (
         <div className="mt-4 border p-4 rounded shadow text-left bg-white">
           <h2 className="text-xl font-bold">{book.title}</h2>
           <p className="text-gray-700">Author: {book.author}</p>
           <p className="text-sm text-gray-500 mt-2">Fee: ${book.borrowFee}</p>
         </div>
-      ) : (
-        <p className="text-gray-600 mt-4">Loading book details...</p>
       )}
 
-      {isCreatingTask ? (
-        <p className="text-gray-600 mt-4">Creating return task...</p>
-      ) : task ? (
+      {task && (
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded p-4 shadow">
           <h3 className="font-semibold text-blue-700">Task Created:</h3>
           <p className="text-sm mt-1">{task.title}</p>
           <p className="text-xs text-gray-600">Due: {new Date(task.dueDate).toDateString()}</p>
         </div>
-      ) : (
-        <p className="text-gray-600 mt-4">No task found</p>
       )}
     </div>
   );

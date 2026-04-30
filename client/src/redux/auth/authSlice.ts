@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUser, fetchUser } from './authAPI';
-import type { AuthState } from '../../types/auth';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AxiosError } from 'axios';
+import API from '../../api/axiosInstance';
+import type { AuthState } from '../../types/auth';
+import { fetchUser, loginUser, registerUser } from './authAPI';
 
 const getUserFromStorage = () => {
   try {
@@ -62,17 +63,21 @@ export const loadUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async () => {
+    try {
+      await API.post('/auth/logout');
+    } catch {
+      // Even if server call fails, still clear local state
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    logout(state) {
-      state.user = null;
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-      localStorage.setItem('loggedOut', 'true');
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(register.pending, (state) => {
@@ -110,9 +115,14 @@ const authSlice = createSlice({
       })
       .addCase(loadUser.rejected, (state) => {
         state.user = null;
+      })
+
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
       });
   },
 });
 
-export const { logout } = authSlice.actions;
 export default authSlice.reducer;

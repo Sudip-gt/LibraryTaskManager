@@ -1,7 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchBooks, borrowBook, returnBook } from '../../api/bookAPI';
-import type { BookState } from '../../types/book';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { borrowBook, fetchBooks, returnBook } from '../../api/bookAPI';
 import { createCheckoutSession } from '../../api/stripeAPI';
+import type { BookState } from '../../types/book';
 
 const initialState: BookState = {
     books: [],
@@ -25,17 +25,17 @@ export const borrowBookById = createAsyncThunk(
 export const returnBookById = createAsyncThunk(
     'books/returnBook',
     async ({ bookId, token }: { bookId: string; token: string }) => {
-        const res = await returnBook(bookId, token);
-        return res;
+        await returnBook(bookId, token);
+        return bookId;
     }
 );
 
 export const startCheckoutSession = createAsyncThunk(
-  'books/startCheckoutSession',
-  async ({ bookId }: { bookId: string }) => {
-    const url = await createCheckoutSession(bookId);
-    return url;
-  }
+    'books/startCheckoutSession',
+    async ({ bookId }: { bookId: string }) => {
+        const url = await createCheckoutSession(bookId);
+        return url;
+    }
 );
 
 const bookSlice = createSlice({
@@ -64,7 +64,7 @@ const bookSlice = createSlice({
 
             .addCase(returnBookById.fulfilled, (state, action) => {
 
-                const book = state.books.find((b) => b._id === action.payload );
+                const book = state.books.find((b) => b._id === action.payload);
                 if (book) {
                     book.isBorrowed = false;
                     book.borrowedBy = null;

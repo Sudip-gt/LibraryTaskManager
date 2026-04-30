@@ -1,12 +1,17 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import connectDB from './config/db';
+import { handleStripeWebhook } from './controllers/stripeController';
 
 dotenv.config();
 
 const app = express();
+
+// Stripe webhook needs raw body for signature verification — must be before express.json()
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
 app.use(express.json());
 app.use(cookieParser());
 
