@@ -1,16 +1,9 @@
 export interface Task {
-  _id?: string;
-  book: string;
+  _id: string;
   user: string;
   title: string;
   dueDate: string;
-  bookId: string;
   completed: boolean;
-  relatedBook: string;
+  relatedBook?: string;
   priority?: 'low' | 'medium' | 'high';
-}
-
-export interface Task {
-  title: string;
-  dueDate: string;
 }

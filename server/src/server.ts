@@ -20,6 +20,7 @@ app.use(cors({
   credentials: true
 }));
 
+import adminRoutes from "./routes/adminRoutes";
 import authRoutes from "./routes/authRoutes";
 import bookRoutes from "./routes/bookRoutes";
 import stripeRoutes from "./routes/stripeRoutes";
@@ -30,6 +31,7 @@ app.use("/api/books", bookRoutes);
 
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello from server!");

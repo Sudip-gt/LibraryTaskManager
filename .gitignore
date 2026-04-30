@@ -44,3 +44,4 @@ client/dist/
 
 # Ignore TypeScript build output
 server/build/
+.env.localDB

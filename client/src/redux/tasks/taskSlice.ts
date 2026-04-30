@@ -30,6 +30,19 @@ export const fetchUserTasks = createAsyncThunk(
   }
 );
 
+export const toggleTaskComplete = createAsyncThunk(
+  'tasks/toggleTaskComplete',
+  async (taskId: string, { rejectWithValue }) => {
+    try {
+      const res = await API.patch(`/tasks/${taskId}/toggle`);
+      return res.data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return rejectWithValue(error.response?.data?.message || 'Failed to toggle task');
+    }
+  }
+);
+
 import { returnBookById } from '../books/bookSlice';
 
 const taskSlice = createSlice({
@@ -50,16 +63,18 @@ const taskSlice = createSlice({
         state.error = action.payload as string;
         state.loading = false;
       })
+      .addCase(toggleTaskComplete.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.tasks.findIndex((t) => t._id === updated._id);
+        if (index !== -1) {
+          state.tasks[index] = updated;
+        }
+      })
       .addCase(returnBookById.fulfilled, (state, action) => {
-        const payload = action.payload as { bookId: string };
-        const returnedBookId = payload?.bookId;
-
+        const returnedBookId = action.payload;
         if (returnedBookId) {
           state.tasks = state.tasks.filter(
-            (task) =>
-              task.relatedBook !== returnedBookId &&
-              task.book !== returnedBookId &&
-              task.bookId !== returnedBookId
+            (task) => task.relatedBook !== returnedBookId
           );
         }
       });

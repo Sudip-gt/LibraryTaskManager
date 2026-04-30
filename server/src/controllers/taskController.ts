@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Task from '../models/Task';
-import Book from '../models/Book';
 import { JwtPayload } from '../middleware/auth';
+import Book from '../models/Book';
+import Task from '../models/Task';
 
 export const createReturnTask = async (req: Request & { user?: JwtPayload }, res: Response) => {
   const { bookId } = req.body;
@@ -56,7 +56,25 @@ export const getUserTasks = async (req: Request & { user?: JwtPayload }, res: Re
     const tasks = await Task.find({ user: userId }).sort({ dueDate: 1 });
     res.status(200).json(tasks);
   } catch (err) {
-    console.error('Error fetching tasks:', err);    ////////////
+    console.error('Error fetching tasks:', err);
     res.status(500).json({ message: 'Failed to fetch tasks' });
+  }
+};
+
+export const toggleTaskComplete = async (req: Request & { user?: JwtPayload }, res: Response) => {
+  const userId = req.user?.userId;
+  const { taskId } = req.params;
+
+  try {
+    const task = await Task.findOne({ _id: taskId, user: userId });
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    task.completed = !task.completed;
+    await task.save();
+
+    res.status(200).json(task);
+  } catch (err) {
+    console.error('Error toggling task:', err);
+    res.status(500).json({ message: 'Failed to update task' });
   }
 };
