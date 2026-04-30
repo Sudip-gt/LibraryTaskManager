@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminBooks from './pages/AdminBooks'
 import AdminDashboard from './pages/AdminDashboard'
 import Books from './pages/Books'
 import Login from './pages/Login'
@@ -43,6 +44,9 @@ function App() {
             } />
             <Route path="/admin" element={
               <ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>
+            } />
+            <Route path="/admin/books" element={
+              <ProtectedRoute adminOnly><AdminBooks /></ProtectedRoute>
             } />
 
             <Route path="/success" element={<Success />} />

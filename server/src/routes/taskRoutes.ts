@@ -5,7 +5,7 @@ import { authenticate } from '../middleware/auth';
 const router = express.Router();
 
 router.post('/return-task', authenticate, createReturnTask);
-router.post('/by-book/:bookId', authenticate, getTaskByBookId);
+router.get('/by-book/:bookId', authenticate, getTaskByBookId);
 router.get('/my-tasks', authenticate, getUserTasks);
 router.patch('/:taskId/toggle', authenticate, toggleTaskComplete);
 

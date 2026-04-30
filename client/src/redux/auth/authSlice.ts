@@ -53,12 +53,10 @@ export const loadUser = createAsyncThunk(
       localStorage.setItem('user', JSON.stringify(res.user));
       return res.user;
     } catch (error: unknown) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        return JSON.parse(storedUser);
-      }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
       const err = error as AxiosError<{ message: string }>;
-      return thunkAPI.rejectWithValue(err.response?.data || 'Failed to load user');
+      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to load user');
     }
   }
 );
@@ -92,7 +90,7 @@ const authSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Registration failed';
+        state.error = (action.payload as string) || 'Registration failed';
       })
 
       .addCase(login.pending, (state) => {
@@ -107,7 +105,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = (action.payload as string) || 'Login failed';
       })
 
       .addCase(loadUser.fulfilled, (state, action) => {

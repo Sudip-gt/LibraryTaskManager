@@ -7,9 +7,33 @@ export const createBook = async (req: Request, res: Response) => {
     res.status(201).json(book);
 };
 
-export const getAllBooks = async (_req: Request, res: Response) => {
-    const books = await Book.find();
-    res.json(books);
+export const getAllBooks = async (req: Request, res: Response) => {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 12));
+    const search = (req.query.search as string || '').trim();
+
+    const filter: Record<string, unknown> = {};
+    if (search) {
+        filter.$or = [
+            { title: { $regex: search, $options: 'i' } },
+            { author: { $regex: search, $options: 'i' } },
+        ];
+    }
+
+    const [books, total] = await Promise.all([
+        Book.find(filter)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 }),
+        Book.countDocuments(filter),
+    ]);
+
+    res.json({
+        books,
+        page,
+        totalPages: Math.ceil(total / limit),
+        total,
+    });
 };
 
 export const getBookById = async (req: Request, res: Response) => {

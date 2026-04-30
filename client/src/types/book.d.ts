@@ -12,8 +12,12 @@ export interface Book {
 }
 
 interface BookState {
-    books: Book[];
-    tasks: Task[];
-    loading: boolean;
-    error: string | null;
+  books: Book[];
+  tasks: Task[];
+  loading: boolean;
+  error: string | null;
+  page: number;
+  totalPages: number;
+  total: number;
+  search: string;
 }

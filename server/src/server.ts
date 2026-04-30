@@ -37,13 +37,24 @@ app.get("/", (req, res) => {
   res.send("Hello from server!");
 });
 
+// Global error handler
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ message: 'Internal server error' });
+});
+
 const startServer = async () => {
+  const clientUrl = process.env.CLIENT_URL;
+  if (!clientUrl) {
+    console.warn('WARNING: CLIENT_URL is not set. CORS will reject all cross-origin requests.');
+  }
+
   await connectDB();
 
   const PORT: number = parseInt(process.env.PORT || '5000');
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Frontend URL: ${process.env.CLIENT_URL}`);
+    console.log(`Frontend URL: ${clientUrl || 'NOT SET'}`);
   });
 };
 
