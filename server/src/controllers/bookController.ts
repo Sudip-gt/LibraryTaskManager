@@ -14,9 +14,10 @@ export const getAllBooks = async (req: Request, res: Response) => {
 
     const filter: Record<string, unknown> = {};
     if (search) {
+        const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         filter.$or = [
-            { title: { $regex: search, $options: 'i' } },
-            { author: { $regex: search, $options: 'i' } },
+            { title: { $regex: escaped, $options: 'i' } },
+            { author: { $regex: escaped, $options: 'i' } },
         ];
     }
 
