@@ -52,16 +52,10 @@ cd server
 npm install
 ```
 
-Create `server/.env`:
+Copy the example env file and fill in your values:
 
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/library
-JWT_SECRET=your_jwt_secret
-JWT_REFRESH_SECRET=your_refresh_secret
-CLIENT_URL=http://localhost:5173
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+```bash
+cp .env.example .env
 ```
 
 Seed the database and start:
@@ -80,10 +74,10 @@ cd client
 npm install
 ```
 
-Create `client/.env`:
+Copy the example env file:
 
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
+```bash
+cp .env.example .env
 ```
 
 Start the dev server:
