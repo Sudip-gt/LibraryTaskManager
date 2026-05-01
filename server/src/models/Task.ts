@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITask extends Document {
   user: mongoose.Types.ObjectId;
@@ -20,5 +20,8 @@ const taskSchema = new Schema<ITask>(
   },
   { timestamps: true }
 );
+
+taskSchema.index({ user: 1, relatedBook: 1 });
+taskSchema.index({ user: 1, completed: 1, dueDate: 1 });
 
 export default mongoose.model<ITask>('Task', taskSchema);

@@ -1,17 +1,21 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Name, email, and password are required' });
+  }
 
   const existing = await User.findOne({ email });
   if (existing) return res.status(400).json({ message: 'User already exists' });
 
   const hashed = await bcrypt.hash(password, 10);
-  await User.create({ name, email, password: hashed, role });
+  await User.create({ name, email, password: hashed });
 
   res.status(201).json({ message: 'Registered successfully' });
 };
@@ -33,7 +37,7 @@ export const login = async (req: Request, res: Response) => {
   res.cookie('jwt', refreshToken, {
     httpOnly: true,
     sameSite: 'strict',
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -49,7 +53,7 @@ export const refresh = async (req: Request, res: Response) => {
     const user = await User.findById(decoded.userId) as IUser;
 
     if (!user || user.refreshToken !== token) return res.sendStatus(403);
-    
+
     const newAccessToken = generateAccessToken(user._id.toString(), user.role);
     const newRefreshToken = generateRefreshToken(user._id.toString());
 
@@ -59,7 +63,7 @@ export const refresh = async (req: Request, res: Response) => {
     res.cookie('jwt', newRefreshToken, {
       httpOnly: true,
       sameSite: 'strict',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

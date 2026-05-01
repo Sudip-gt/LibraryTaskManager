@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUser, fetchUser } from './authAPI';
-import type { AuthState } from '../../types/auth';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AxiosError } from 'axios';
+import API from '../../api/axiosInstance';
+import type { AuthState } from '../../types/auth';
+import { fetchUser, loginUser, registerUser } from './authAPI';
 
 const getUserFromStorage = () => {
   try {
@@ -52,12 +53,21 @@ export const loadUser = createAsyncThunk(
       localStorage.setItem('user', JSON.stringify(res.user));
       return res.user;
     } catch (error: unknown) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        return JSON.parse(storedUser);
-      }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
       const err = error as AxiosError<{ message: string }>;
-      return thunkAPI.rejectWithValue(err.response?.data || 'Failed to load user');
+      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to load user');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async () => {
+    try {
+      await API.post('/auth/logout');
+    } catch {
+      // Even if server call fails, still clear local state
     }
   }
 );
@@ -65,14 +75,7 @@ export const loadUser = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    logout(state) {
-      state.user = null;
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-      localStorage.setItem('loggedOut', 'true');
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(register.pending, (state) => {
@@ -87,7 +90,7 @@ const authSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Registration failed';
+        state.error = (action.payload as string) || 'Registration failed';
       })
 
       .addCase(login.pending, (state) => {
@@ -102,7 +105,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = (action.payload as string) || 'Login failed';
       })
 
       .addCase(loadUser.fulfilled, (state, action) => {
@@ -110,9 +113,14 @@ const authSlice = createSlice({
       })
       .addCase(loadUser.rejected, (state) => {
         state.user = null;
+      })
+
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
       });
   },
 });
 
-export const { logout } = authSlice.actions;
 export default authSlice.reducer;

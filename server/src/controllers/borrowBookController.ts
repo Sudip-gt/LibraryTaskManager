@@ -73,9 +73,9 @@ export const returnBook = async (req: userRequest, res: Response) => {
     book.borrowedBy = null;
     book.borrowedAt = null;
     await book.save();
-    await Task.findOneAndDelete({ book: id, user: userId });
+    await Task.findOneAndDelete({ relatedBook: id, user: userId });
 
-    res.json({ message: 'Book returned successfully', bookId: id,  });
+    res.json({ message: 'Book returned successfully', bookId: id, });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to return book' });
