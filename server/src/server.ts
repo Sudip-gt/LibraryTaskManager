@@ -8,6 +8,14 @@ import { handleStripeWebhook } from './controllers/stripeController';
 dotenv.config();
 
 const app = express();
+const defaultClientUrls = [
+  'http://localhost:5173',
+  'https://library-task-manager.vercel.app',
+];
+const allowedOrigins = (process.env.CLIENT_URL || defaultClientUrls.join(','))
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Stripe webhook needs raw body for signature verification — must be before express.json()
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
@@ -16,7 +24,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true
 }));
 
@@ -44,9 +59,8 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 const startServer = async () => {
-  const clientUrl = process.env.CLIENT_URL;
-  if (!clientUrl) {
-    console.warn('WARNING: CLIENT_URL is not set. CORS will reject all cross-origin requests.');
+  if (!process.env.CLIENT_URL) {
+    console.warn(`WARNING: CLIENT_URL is not set. Falling back to default origins: ${allowedOrigins.join(', ')}`);
   }
 
   await connectDB();
@@ -54,7 +68,7 @@ const startServer = async () => {
   const PORT: number = parseInt(process.env.PORT || '5000');
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Frontend URL: ${clientUrl || 'NOT SET'}`);
+    console.log(`Allowed frontend URLs: ${allowedOrigins.join(', ')}`);
   });
 };
 

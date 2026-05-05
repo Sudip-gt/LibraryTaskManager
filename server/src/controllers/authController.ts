@@ -4,6 +4,21 @@ import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' as const : 'strict' as const,
+  secure: isProduction,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const clearCookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' as const : 'strict' as const,
+  secure: isProduction,
+};
+
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
@@ -34,12 +49,7 @@ export const login = async (req: Request, res: Response) => {
   user.refreshToken = refreshToken;
   await user.save();
 
-  res.cookie('jwt', refreshToken, {
-    httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie('jwt', refreshToken, refreshCookieOptions);
 
   res.json({ accessToken, user: { id: user._id, name: user.name, role: user.role } });
 };
@@ -60,12 +70,7 @@ export const refresh = async (req: Request, res: Response) => {
     user.refreshToken = newRefreshToken;
     await user.save();
 
-    res.cookie('jwt', newRefreshToken, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('jwt', newRefreshToken, refreshCookieOptions);
 
     res.json({
       accessToken: newAccessToken,
@@ -91,6 +96,6 @@ export const logout = async (req: Request, res: Response) => {
     await user.save();
   }
 
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'strict', secure: true });
+  res.clearCookie('jwt', clearCookieOptions);
   res.json({ message: 'Logged out' });
 };
