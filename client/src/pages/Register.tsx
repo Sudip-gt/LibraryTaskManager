@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { register } from '../redux/auth/authSlice';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/hook';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { register } from '../redux/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
 
 const Register: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -14,23 +14,20 @@ const Register: React.FC = () => {
     password: '',
   });
 
-  const { loading, error, user } = useAppSelector((state) => state.auth);
+  const { loading, error } = useAppSelector((state) => state.auth);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(register(form));
-  };
-
-  useEffect(() => {
-    if (user) {
+    const result = await dispatch(register(form));
+    if (register.fulfilled.match(result)) {
       toast.success('Registration successful!');
       navigate('/');
     }
-  }, [user, navigate]);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
