@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response) => {
 
   res.cookie('jwt', refreshToken, refreshCookieOptions);
 
-  res.json({ accessToken, user: { id: user._id, name: user.name, role: user.role } });
+  res.json({ accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
 export const refresh = async (req: Request, res: Response) => {
@@ -75,8 +75,9 @@ export const refresh = async (req: Request, res: Response) => {
     res.json({
       accessToken: newAccessToken,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
+        email: user.email,
         role: user.role,
       },
     });

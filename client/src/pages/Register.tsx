@@ -25,7 +25,7 @@ const Register: React.FC = () => {
     const result = await dispatch(register(form));
     if (register.fulfilled.match(result)) {
       toast.success('Registration successful!');
-      navigate('/');
+      navigate('/login');
     }
   };
 

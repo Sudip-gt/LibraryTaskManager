@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from 'react';
 import API from '../api/axiosInstance';
-import { useAppSelector } from '../redux/hook';
+import { loadUser } from '../redux/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
 import type { Book } from '../types/book';
 
 interface HistoryItem {
@@ -19,6 +20,7 @@ interface FineItem {
 }
 
 const UserProfile = () => {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const [currentlyBorrowed, setCurrentlyBorrowed] = useState<Book[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -29,6 +31,10 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (user && !user.email) {
+          await dispatch(loadUser());
+        }
+
         const [historyRes, finesRes] = await Promise.all([
           API.get('/admin/my-history'),
           API.get('/admin/my-fines'),
@@ -44,7 +50,7 @@ const UserProfile = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [dispatch, user]);
 
   if (loading) return <p className="text-center mt-10">Loading profile...</p>;
 
