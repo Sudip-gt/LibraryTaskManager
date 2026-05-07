@@ -75,8 +75,8 @@ export const createCheckoutSession = async (
         },
       ],
       locale: 'en',
-      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      success_url: `${process.env.CLIENT_URL || 'https://library-task-manager-3cs9hef8z-sudip-gts-projects.vercel.app/'}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://library-task-manager-3cs9hef8z-sudip-gts-projects.vercel.app/'}/cancel`,
     });
 
     return res.status(200).json({ url: session.url });
