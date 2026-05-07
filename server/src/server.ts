@@ -29,7 +29,11 @@ app.use(cors({
       callback(null, true);
       return;
     }
-
+    // Allow Vercel preview deployment URLs for this project
+    if (origin.match(/^https:\/\/library-task-manager[a-z0-9-]*\.vercel\.app$/)) {
+      callback(null, true);
+      return;
+    }
     callback(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true
