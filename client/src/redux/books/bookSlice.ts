@@ -46,16 +46,16 @@ export const deleteBook = createAsyncThunk(
 
 export const borrowBookById = createAsyncThunk(
     'books/borrow',
-    async ({ bookId, token }: { bookId: string; token: string }) => {
-        await borrowBook(bookId, token);
+    async ({ bookId }: { bookId: string }) => {
+        await borrowBook(bookId);
         return bookId;
     }
 );
 
 export const returnBookById = createAsyncThunk(
     'books/returnBook',
-    async ({ bookId, token }: { bookId: string; token: string }) => {
-        await returnBook(bookId, token);
+    async ({ bookId }: { bookId: string }) => {
+        await returnBook(bookId);
         return bookId;
     }
 );

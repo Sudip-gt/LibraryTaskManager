@@ -8,8 +8,8 @@ import { useAppDispatch, useAppSelector } from '../redux/hook';
 const Books: React.FC = () => {
   const dispatch = useAppDispatch();
   const { books, loading, error, page, totalPages, search } = useAppSelector((state) => state.books);
-  const token = localStorage.getItem('accessToken') || '';
-  const isLoggedIn = !!token;
+  const { user } = useAppSelector((state) => state.auth);
+  const isLoggedIn = !!user;
 
   const [loginErrorShownFor, setLoginErrorShownFor] = React.useState<string | null>(null);
   const [localSearch, setLocalSearch] = React.useState(search);
@@ -48,7 +48,7 @@ const Books: React.FC = () => {
     }
 
     try {
-      await dispatch(returnBookById({ bookId, token })).unwrap();
+      await dispatch(returnBookById({ bookId })).unwrap();
       setLoginErrorShownFor(null);
       localStorage.removeItem(`taskCreatedFor-${bookId}`);
       toast.success('Book returned successfully');

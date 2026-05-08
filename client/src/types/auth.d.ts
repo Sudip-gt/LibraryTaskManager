@@ -5,9 +5,12 @@ export interface User {
   role: 'user' | 'admin';
 }
 
-export interface AuthResponse {
+export interface AuthUserResponse {
   user: User;
-  accessToken: string;
+}
+
+export interface AuthMessageResponse {
+  message: string;
 }
 
 export interface AuthForm {
@@ -16,8 +19,9 @@ export interface AuthForm {
   password: string;
 }
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  initialized: boolean;
 }

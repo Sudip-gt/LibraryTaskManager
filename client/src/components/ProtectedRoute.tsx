@@ -7,7 +7,11 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, adminOnly = false }: Props) => {
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, initialized } = useAppSelector((state) => state.auth);
+
+  if (!initialized) {
+    return null;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;

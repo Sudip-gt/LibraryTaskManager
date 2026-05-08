@@ -17,13 +17,10 @@ import { useAppDispatch } from './redux/hook'
 
 function App() {
 
-    const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const loggedOut = localStorage.getItem('loggedOut') === 'true';
-    if (!loggedOut) {
-      dispatch(loadUser());
-    }
+    dispatch(loadUser());
   }, [dispatch]);
 
   return (

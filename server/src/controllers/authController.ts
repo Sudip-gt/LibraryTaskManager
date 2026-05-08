@@ -13,11 +13,25 @@ const refreshCookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
+const accessCookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' as const : 'strict' as const,
+  secure: isProduction,
+  maxAge: 15 * 60 * 1000,
+};
+
 const clearCookieOptions = {
   httpOnly: true,
   sameSite: isProduction ? 'none' as const : 'strict' as const,
   secure: isProduction,
 };
+
+const buildUserResponse = (user: IUser) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -49,9 +63,10 @@ export const login = async (req: Request, res: Response) => {
   user.refreshToken = refreshToken;
   await user.save();
 
+  res.cookie('accessToken', accessToken, accessCookieOptions);
   res.cookie('jwt', refreshToken, refreshCookieOptions);
 
-  res.json({ accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
+  res.json({ user: buildUserResponse(user) });
 };
 
 export const refresh = async (req: Request, res: Response) => {
@@ -70,16 +85,11 @@ export const refresh = async (req: Request, res: Response) => {
     user.refreshToken = newRefreshToken;
     await user.save();
 
+    res.cookie('accessToken', newAccessToken, accessCookieOptions);
     res.cookie('jwt', newRefreshToken, refreshCookieOptions);
 
     res.json({
-      accessToken: newAccessToken,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: buildUserResponse(user),
     });
   } catch {
     return res.sendStatus(403);
@@ -97,6 +107,7 @@ export const logout = async (req: Request, res: Response) => {
     await user.save();
   }
 
+  res.clearCookie('accessToken', clearCookieOptions);
   res.clearCookie('jwt', clearCookieOptions);
   res.json({ message: 'Logged out' });
 };

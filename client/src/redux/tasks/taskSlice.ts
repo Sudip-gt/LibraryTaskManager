@@ -18,10 +18,7 @@ export const fetchUserTasks = createAsyncThunk(
   'tasks/fetchUserTasks',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('accessToken') || '';
-      const res = await API.get('/tasks/my-tasks', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await API.get('/tasks/my-tasks');
       return res.data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

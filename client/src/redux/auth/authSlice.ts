@@ -4,20 +4,11 @@ import API from '../../api/axiosInstance';
 import type { AuthState } from '../../types/auth';
 import { fetchUser, loginUser, registerUser } from './authAPI';
 
-const getUserFromStorage = () => {
-  try {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  } catch (error) {
-    console.error('Failed to parse user from local storage', error);
-    return null;
-  }
-};
-
 const initialState: AuthState = {
-  user: getUserFromStorage(),
+  user: null,
   loading: false,
   error: null,
+  initialized: false,
 };
 
 export const register = createAsyncThunk(
@@ -49,12 +40,8 @@ export const loadUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await fetchUser();
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('user', JSON.stringify(res.user));
       return res.user;
     } catch (error: unknown) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
       const err = error as AxiosError<{ message: string }>;
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to load user');
     }
@@ -82,11 +69,8 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state) => {
         state.loading = false;
-        state.user = action.payload.user;
-        localStorage.setItem('accessToken', action.payload.accessToken);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -100,25 +84,34 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        localStorage.setItem('accessToken', action.payload.accessToken);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        state.initialized = true;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || 'Login failed';
+        state.initialized = true;
       })
 
+      .addCase(loadUser.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(loadUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.loading = false;
+        state.error = null;
+        state.initialized = true;
       })
       .addCase(loadUser.rejected, (state) => {
         state.user = null;
+        state.loading = false;
+        state.initialized = true;
       })
 
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
+        state.loading = false;
+        state.error = null;
+        state.initialized = true;
       });
   },
 });
