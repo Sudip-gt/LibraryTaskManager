@@ -9,16 +9,28 @@ const initialState: BookState = {
     tasks: [],
     loading: false,
     error: null,
+    activeRequestKey: null,
     page: 1,
     totalPages: 1,
     total: 0,
     search: '',
 };
 
+const getBooksRequestKey = (params: { page?: number; search?: string } | undefined) =>
+    JSON.stringify({ page: params?.page ?? 1, search: params?.search ?? '' });
+
 export const loadBooks = createAsyncThunk(
     'books/loadBooks',
     async (params: { page?: number; search?: string } | undefined) => {
         return await fetchBooks({ page: params?.page, limit: 12, search: params?.search });
+    },
+    {
+        condition: (params, { getState }) => {
+            const { books } = getState() as { books: BookState };
+            const requestKey = getBooksRequestKey(params);
+
+            return !(books.loading && books.activeRequestKey === requestKey);
+        },
     }
 );
 
@@ -84,6 +96,7 @@ const bookSlice = createSlice({
         builder
             .addCase(loadBooks.pending, (state) => {
                 state.loading = true;
+                state.activeRequestKey = getBooksRequestKey(state);
             })
             .addCase(loadBooks.fulfilled, (state, action) => {
                 state.books = action.payload.books;
@@ -91,9 +104,11 @@ const bookSlice = createSlice({
                 state.totalPages = action.payload.totalPages;
                 state.total = action.payload.total;
                 state.loading = false;
+                state.activeRequestKey = null;
             })
             .addCase(loadBooks.rejected, (state, action) => {
                 state.loading = false;
+                state.activeRequestKey = null;
                 state.error = action.error.message || 'Failed to fetch books';
             })
             .addCase(borrowBookById.fulfilled, (state, action) => {

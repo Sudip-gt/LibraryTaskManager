@@ -1,8 +1,17 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import type { JwtPayload } from '../middleware/auth';
 import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
+
+export const getMe = async (req: Request & { user?: JwtPayload }, res: Response) => {
+  // req.user is set by authenticate middleware
+  if (!req.user) return res.sendStatus(401);
+  const user = await User.findById(req.user.userId) as IUser;
+  if (!user) return res.sendStatus(404);
+  res.json({ user: buildUserResponse(user) });
+};
 
 const isProduction = process.env.NODE_ENV === 'production';
 

@@ -14,6 +14,6 @@ export const loginUser = async (
 };
 
 export const fetchUser = async (): Promise<AuthUserResponse> => {
-  const res = await API.post<AuthUserResponse>('/auth/refresh');
+  const res = await API.get<AuthUserResponse>('/auth/me');
   return res.data;
 };

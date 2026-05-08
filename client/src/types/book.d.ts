@@ -16,6 +16,7 @@ interface BookState {
   tasks: Task[];
   loading: boolean;
   error: string | null;
+  activeRequestKey: string | null;
   page: number;
   totalPages: number;
   total: number;

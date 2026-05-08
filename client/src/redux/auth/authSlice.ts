@@ -45,6 +45,12 @@ export const loadUser = createAsyncThunk(
       const err = error as AxiosError<{ message: string }>;
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to load user');
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { auth } = getState() as { auth: AuthState };
+      return !auth.loading && !auth.initialized;
+    },
   }
 );
 

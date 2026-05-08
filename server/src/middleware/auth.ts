@@ -26,7 +26,7 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch {
-    return res.status(403).json({ message: 'Token invalid or expired' });
+    return res.status(401).json({ message: 'Token invalid or expired' });
   }
 };
 

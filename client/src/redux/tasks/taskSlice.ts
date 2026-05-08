@@ -24,6 +24,12 @@ export const fetchUserTasks = createAsyncThunk(
       const error = err as { response?: { data?: { message?: string } } };
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch tasks');
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { tasks } = getState() as { tasks: TaskState };
+      return !tasks.loading;
+    },
   }
 );
 
