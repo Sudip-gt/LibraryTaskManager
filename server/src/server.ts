@@ -1,121 +1,41 @@
-
-
-
-
-
-
-
 import dotenv from 'dotenv';
 dotenv.config();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import cors from 'cors';
-import express from 'express';
-import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
 import logger from './utils/logger';
 
+import { handleStripeWebhook } from './controllers/stripeController';
+import adminRoutes from './routes/adminRoutes';
 import authRoutes from './routes/authRoutes';
 import bookRoutes from './routes/bookRoutes';
-import adminRoutes from './routes/adminRoutes';
-import taskRoutes from './routes/taskRoutes';
 import stripeRoutes from './routes/stripeRoutes';
-import { handleStripeWebhook } from './controllers/stripeController';
+import taskRoutes from './routes/taskRoutes';
 
-const connectDB = async (): Promise<void> => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI!);
-    logger.info('MongoDB connected');
-  } catch (err) {
-    logger.error({ err }, 'Database connection error');
-    process.exit(1);
-  }
+type AppError = Error & {
+  status?: number;
 };
-connectDB();
 
-const app: express.Application = express();
-const PORT: number = parseInt(process.env.PORT || '5000');
-
-// Stripe webhook needs raw body for signature verification — must be before express.json()
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
-
-app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
+const app = express();
+const port = Number.parseInt(process.env.PORT || '5000', 10);
 const allowedOrigins = (process.env.FRONTEND_URLS || '')
   .split(',')
-  .map(url => url.trim())
-  .filter(url => url);
+  .map((url) => url.trim())
+  .filter(Boolean);
 
-logger.info({ allowedOrigins }, 'Allowed frontend URLs');
+const connectDB = async (): Promise<void> => {
+  const mongoUri = process.env.MONGO_URI;
+
+  if (!mongoUri) {
+    throw new Error('MONGO_URI environment variable is not set');
+  }
+
+  await mongoose.connect(mongoUri);
+  logger.info('MongoDB connected');
+};
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
@@ -123,28 +43,42 @@ const corsOptions = {
       callback(null, true);
       return;
     }
-    // Allow Vercel preview deployment URLs for this project
-    if (origin.match(/^https:\/\/library-task-manager[a-z0-9-]*\.vercel\.app$/)) {
+
+    if (
+      /^https:\/\/library-task-manager[a-z0-9-]*\.vercel\.app$/.test(origin) ||
+      origin === 'http://localhost:5173'
+    ) {
       callback(null, true);
       return;
     }
-    callback(new Error(`CORS blocked for origin: ${origin}`));
+
+    const err: AppError = new Error(`CORS blocked for origin: ${origin}`);
+    err.status = 403;
+    callback(err);
   },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
-app.use(cors(corsOptions));
+logger.info({ allowedOrigins }, 'Allowed frontend URLs');
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
+// Stripe webhook needs raw body for signature verification before JSON parsing.
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  }),
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
@@ -152,21 +86,38 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/stripe', stripeRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   logger.info('Health check requested');
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello from server!");
+app.get('/', (_req: Request, res: Response) => {
+  res.send('Hello from server!');
 });
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
   logger.error({ err }, 'Unhandled error occurred');
-  res.status(500).json({ message: 'Internal Server Error' });
+
+  const status = err.status || 500;
+  const message = status === 403 ? 'Forbidden' : 'Internal Server Error';
+
+  res.status(status).json({ message });
 });
 
-app.listen(PORT, () => {
-  logger.info(`Server running on http://localhost:${PORT}`);
-});
+const startServer = async (): Promise<void> => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      logger.info(`Server running on http://localhost:${port}`);
+    });
+  } catch (err) {
+    logger.error({ err }, 'Server startup failed');
+    process.exit(1);
+  }
+};
+
+void startServer();
