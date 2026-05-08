@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Book, { IBook } from "../models/Book";
 
 const books: Partial<IBook>[] = [
@@ -26,11 +25,11 @@ const books: Partial<IBook>[] = [
         title: "Design Patterns",
         author: "Erich Gamma et al.",
         description: "Elements of reusable object-oriented software.",
-        available: false,
+        available: true,
         borrowFee: 60,
-        isBorrowed: true,
+        isBorrowed: false,
         borrowedBy: null,
-        borrowedAt: new Date(),
+        borrowedAt: null,
     },
     {
         title: "Introduction to Algorithms",
