@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { JwtPayload } from '../middleware/auth';
 import Book from '../models/Book';
 import Task from '../models/Task';
+import logger from '../utils/logger';
 
 export const createReturnTask = async (req: Request & { user?: JwtPayload }, res: Response) => {
   const { bookId } = req.body;
@@ -30,7 +31,7 @@ export const createReturnTask = async (req: Request & { user?: JwtPayload }, res
 
     res.status(201).json(task);
   } catch (error) {
-    console.error('Task creation failed:', error);
+    logger.error({ error }, 'Task creation failed');
     res.status(500).json({ message: 'Failed to create return task' });
   }
 };
@@ -45,7 +46,7 @@ export const getTaskByBookId = async (req: Request & { user?: JwtPayload }, res:
 
     res.status(200).json(task);
   } catch (error) {
-    console.error('Error fetching task:', error);   ////////////////
+    logger.error({ error }, 'Error fetching task');
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -56,7 +57,7 @@ export const getUserTasks = async (req: Request & { user?: JwtPayload }, res: Re
     const tasks = await Task.find({ user: userId }).sort({ dueDate: 1 });
     res.status(200).json(tasks);
   } catch (err) {
-    console.error('Error fetching tasks:', err);
+    logger.error({ err }, 'Error fetching tasks');
     res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 };
@@ -74,7 +75,7 @@ export const toggleTaskComplete = async (req: Request & { user?: JwtPayload }, r
 
     res.status(200).json(task);
   } catch (err) {
-    console.error('Error toggling task:', err);
+    logger.error({ err }, 'Error toggling task');
     res.status(500).json({ message: 'Failed to update task' });
   }
 };
